@@ -84,5 +84,5 @@ export type GridPostListProps = {
 
 export type SearchResultProps = {
   isSearchFetching: boolean;
-  searchedPost: Models.Document[];
+  searchedPost: Models.DocumentList<Models.Document> | undefined;
 };

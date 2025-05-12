@@ -1,32 +1,31 @@
 import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
-
-import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import {
-  createUserAccount,
-  signInAccount,
-  signOutAccount,
   createPost,
-  getRecentPosts,
-  likePost,
-  savePost,
+  createUserAccount,
+  deletePost,
   deleteSavedPost,
   getCurrentUser,
-  getPostById,
-  updatePost,
-  deletePost,
   getInfinitePosts,
-  searchPosts,
-  getUsers,
-  updateUser,
+  getPostById,
+  getRecentPosts,
   getUserById,
+  getUsers,
+  likePost,
+  savePost,
+  searchPosts,
+  signInAccount,
+  signOutAccount,
+  updatePost,
+  updateUser,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/lib/types";
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+import {
+  InfiniteData, useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
+import { Models } from "appwrite";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "../../types";
 
 // ============================================================
 // AUTH QUERIES
@@ -84,7 +83,8 @@ export const useLikePost = () => {
       postId: string;
       likesArray: string[];
     }) => likePost(postId, likesArray),
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
+      if(!data) return;
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
       });
@@ -181,7 +181,13 @@ export const useDeletePost = () => {
 };
 
 export const useGetPosts = () => {
-  return useInfiniteQuery({
+  return useInfiniteQuery<
+    Models.DocumentList<Models.Document> | undefined,
+    Error,
+    InfiniteData<Models.DocumentList<Models.Document> | undefined>,
+    [string],
+    string
+  >({
     queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
     queryFn: getInfinitePosts,
     getNextPageParam: (lastPage) => {
@@ -191,6 +197,7 @@ export const useGetPosts = () => {
       const lastId = lastPage?.documents[lastPage?.documents.length - 1].$id;
       return lastId;
     },
+    initialPageParam: '',
   });
 };
 
